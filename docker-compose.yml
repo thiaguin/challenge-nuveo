@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+    pgadmin4:
+        image: dpage/pgadmin4
+        container_name: backend-pgadmin4
+        ports:
+            - '15432:80'
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=user@mail.com
+            - PGADMIN_DEFAULT_PASSWORD=pwd2021
+        depends_on:
+            - backend-postgres
+        networks:
+            - backend-network
+
+    backend-postgres:
+        image: 'postgres'
+        container_name: backend-postgres
+        environment:
+            - POSTGRES_DB=dev
+            - POSTGRES_USER=backend-username
+            - POSTGRES_PASSWORD=pwd2021
+        ports:
+            - '5432:5432'
+        volumes:
+            - ./data/postgres/db
+        networks:
+            - backend-network
+
+    backend-rabbitmq:
+        image: 'rabbitmq:3-management'
+        container_name: backend-rabbitmq
+        ports:
+            - '15672:15672'
+            - '5672:5672'
+        networks:
+            - backend-network
+
+
+networks:
+    backend-network:
+        driver: bridge

@@ -2,7 +2,7 @@
 
 ## Database Migration
 
-Clone the go sidekick, build the migration and run:
+Clone the gosidekick, build the migration and run:
 
 ```bash
 # To create the database:

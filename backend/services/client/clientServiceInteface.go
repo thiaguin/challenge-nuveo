@@ -1,15 +1,16 @@
 package services
 
 import (
+	errors "backend/error"
 	"backend/models"
 	"io"
 )
 
 // ClientServiceInterface interface
 type ClientServiceInterface interface {
-	GetAll() ([]models.Client, error)
-	GetById(id string) (*models.Client, error)
-	Update(id string, body io.Reader) (*models.Client, error)
-	Create(body io.Reader) (*models.Client, error)
-	Delete(id string) error
+	GetAll() ([]models.Client, *errors.HTTPError)
+	GetById(id string) (*models.Client, *errors.HTTPError)
+	Update(id string, body io.Reader) (*models.Client, *errors.HTTPError)
+	Create(body io.Reader) (*models.Client, *errors.HTTPError)
+	Delete(id string) *errors.HTTPError
 }

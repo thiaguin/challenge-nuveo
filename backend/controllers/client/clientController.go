@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	errors "backend/error"
 	clientService "backend/services/client"
 	"encoding/json"
 	"net/http"
@@ -26,7 +25,7 @@ func (c clientController) GetAll(w http.ResponseWriter, r *http.Request) {
 	clients, err := c.service.GetAll()
 
 	if err != nil {
-		errors.SendError(w, err, 500)
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 
@@ -40,7 +39,7 @@ func (c clientController) GetById(w http.ResponseWriter, r *http.Request) {
 	client, err := c.service.GetById(clientId)
 
 	if err != nil {
-		errors.SendError(w, err, 500)
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 
@@ -52,7 +51,7 @@ func (c clientController) Create(w http.ResponseWriter, r *http.Request) {
 	client, err := c.service.Create(r.Body)
 
 	if err != nil {
-		errors.SendError(w, err, 500)
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 
@@ -66,7 +65,7 @@ func (c clientController) Update(w http.ResponseWriter, r *http.Request) {
 	_, err := c.service.Update(clientId, r.Body)
 
 	if err != nil {
-		errors.SendError(w, err, 500)
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 
@@ -80,7 +79,7 @@ func (c clientController) Delete(w http.ResponseWriter, r *http.Request) {
 	err := c.service.Delete(clientId)
 
 	if err != nil {
-		errors.SendError(w, err, 500)
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 

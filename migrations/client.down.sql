@@ -1,3 +1,3 @@
-DROP TRIGGER set_timestamp ON client;
+DROP TRIGGER set_timestamp ON clients;
 DROP FUNCTION trigger_set_timestamp;
-DROP TABLE client;
+DROP TABLE clients;

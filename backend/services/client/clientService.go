@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+
+	"github.com/google/uuid"
 )
 
 type clientService struct {
@@ -24,19 +26,26 @@ func (s clientService) GetAll() ([]models.Client, error) {
 	return s.repository.GetAll()
 }
 
-func (s clientService) GetById(id string) (models.Client, error) {
+func (s clientService) GetById(id string) (*models.Client, error) {
 	return s.repository.GetById(id)
 }
 
-func (s clientService) Create(body io.Reader) (models.Client, error) {
+func (s clientService) Create(body io.Reader) (*models.Client, error) {
 	client := dto.CreateClientDTO{}
 	err := json.NewDecoder(body).Decode(&client)
 
 	if err != nil {
-		return models.Client{}, errors.New("Error")
+		return &models.Client{}, errors.New("Error")
+	}
+
+	uuidValue, uuidErr := uuid.NewUUID()
+
+	if uuidErr != nil {
+		return nil, uuidErr
 	}
 
 	newClient := models.Client{
+		ID:      uuidValue,
 		Name:    client.Name,
 		Address: client.Address,
 	}
@@ -44,18 +53,30 @@ func (s clientService) Create(body io.Reader) (models.Client, error) {
 	return s.repository.Create(newClient)
 }
 
-func (s clientService) Update(id string, body io.Reader) error {
-	client := models.Client{}
-	err := json.NewDecoder(body).Decode(&client)
+func (s clientService) Update(id string, body io.Reader) (*models.Client, error) {
+	client, clientErr := s.repository.GetById(id)
 
-	if err != nil {
-		return errors.New("Error")
+	if clientErr != nil {
+		return nil, clientErr
 	}
 
-	s.repository.Update(id, client)
-	return nil
+	valuesToUpdate := map[string]interface{}{}
+
+	decodeErr := json.NewDecoder(body).Decode(&valuesToUpdate)
+
+	if decodeErr != nil {
+		return nil, decodeErr
+	}
+
+	return s.repository.Update(client, valuesToUpdate)
 }
 
 func (s clientService) Delete(id string) error {
-	return s.repository.Delete(id)
+	client, clientErr := s.repository.GetById(id)
+
+	if clientErr != nil {
+		return clientErr
+	}
+
+	return s.repository.Delete(client)
 }

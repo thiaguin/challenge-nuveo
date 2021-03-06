@@ -1,7 +1,7 @@
-CREATE TABLE IF NOT EXISTS client (
+CREATE TABLE IF NOT EXISTS clients (
 	id uuid PRIMARY KEY,
 	address VARCHAR ( 50 ) NOT NULL,
-	name VARCHAR ( 255 ) UNIQUE NOT NULL,
+	name VARCHAR ( 255 ) NOT NULL,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -15,6 +15,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_timestamp
-BEFORE UPDATE ON client
+BEFORE UPDATE ON clients
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();

@@ -7,8 +7,8 @@ import (
 // ClientRepositoryInterface interface
 type ClientRepositoryInterface interface {
 	GetAll() ([]models.Client, error)
-	GetById(id string) (models.Client, error)
-	Create(client models.Client) (models.Client, error)
-	Update(id string, client models.Client) (models.Client, error)
-	Delete(id string) error
+	GetById(id string) (*models.Client, error)
+	Create(client models.Client) (*models.Client, error)
+	Update(client *models.Client, value map[string]interface{}) (*models.Client, error)
+	Delete(client *models.Client) error
 }

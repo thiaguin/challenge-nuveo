@@ -2,41 +2,64 @@ package repositories
 
 import (
 	"backend/models"
+
+	"gorm.io/gorm"
 )
 
-type clientRepository struct{}
+type clientRepository struct {
+	db *gorm.DB
+}
 
 // NewClientRepository func
-func NewClientRepository() ClientRepositoryInterface {
-	return &clientRepository{}
+func NewClientRepository(db *gorm.DB) ClientRepositoryInterface {
+	return &clientRepository{
+		db: db,
+	}
 }
 
 func (r clientRepository) GetAll() ([]models.Client, error) {
-	galeano := models.Client{Name: "Galeano", Address: "Cotia"}
-	nestor := models.Client{Name: "Nestor", Address: "Morumbi"}
+	clients := []models.Client{}
+	result := r.db.Find(&clients)
 
-	clients := []models.Client{
-		galeano,
-		nestor,
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
 	return clients, nil
 }
 
-func (r clientRepository) GetById(id string) (models.Client, error) {
-	luciano := models.Client{Name: "Luciano", Address: "Cotia"}
+func (r clientRepository) GetById(id string) (*models.Client, error) {
+	client := models.Client{}
+	result := r.db.Where("id = ?", id).First(&client)
 
-	return luciano, nil
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &client, nil
 }
 
-func (r clientRepository) Create(client models.Client) (models.Client, error) {
+func (r clientRepository) Create(client models.Client) (*models.Client, error) {
+	result := r.db.Create(&client)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &client, nil
+}
+
+func (r clientRepository) Update(client *models.Client, values map[string]interface{}) (*models.Client, error) {
+	r.db.Model(client).Omit("id").Updates(values)
 	return client, nil
 }
 
-func (r clientRepository) Update(id string, client models.Client) (models.Client, error) {
-	return client, nil
-}
+func (r clientRepository) Delete(client *models.Client) error {
+	result := r.db.Unscoped().Delete(client)
 
-func (r clientRepository) Delete(id string) error {
+	if result.Error != nil {
+		return result.Error
+	}
+
 	return nil
 }

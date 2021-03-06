@@ -18,7 +18,7 @@ services:
         image: 'postgres'
         container_name: backend-postgres
         environment:
-            - POSTGRES_DB=dev
+            - POSTGRES_DB=nuveo-db
             - POSTGRES_USER=backend-username
             - POSTGRES_PASSWORD=pwd2021
         ports:

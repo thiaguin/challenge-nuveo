@@ -26,7 +26,7 @@ func (c clientController) GetAll(w http.ResponseWriter, r *http.Request) {
 	clients, err := c.service.GetAll()
 
 	if err != nil {
-		errors.SendError(w, "Olha o erro", 500)
+		errors.SendError(w, err, 500)
 		return
 	}
 
@@ -40,7 +40,7 @@ func (c clientController) GetById(w http.ResponseWriter, r *http.Request) {
 	client, err := c.service.GetById(clientId)
 
 	if err != nil {
-		errors.SendError(w, "Olha o erro", 500)
+		errors.SendError(w, err, 500)
 		return
 	}
 
@@ -63,10 +63,10 @@ func (c clientController) Create(w http.ResponseWriter, r *http.Request) {
 func (c clientController) Update(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	clientId := params["id"]
-	err := c.service.Update(clientId, r.Body)
+	_, err := c.service.Update(clientId, r.Body)
 
 	if err != nil {
-		errors.SendError(w, "Olha o erro", 500)
+		errors.SendError(w, err, 500)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (c clientController) Delete(w http.ResponseWriter, r *http.Request) {
 	err := c.service.Delete(clientId)
 
 	if err != nil {
-		errors.SendError(w, "Olha o erro", 500)
+		errors.SendError(w, err, 500)
 		return
 	}
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"backend/repositories"
 	"net/http"
 )
 
@@ -14,7 +15,8 @@ func NewServer() *Server {
 
 // Run func
 func (s Server) Run(port string) {
-	clientServer := NewClientServer()
+	dbRepository := repositories.NewDB()
+	clientServer := NewClientServer(dbRepository)
 	http.Handle("/", clientServer.server)
 	http.ListenAndServe(port, nil)
 }

@@ -5,6 +5,7 @@ import (
 	"backend/models"
 	dto "backend/models/dto"
 	clientRepository "backend/repositories/client"
+	messageService "backend/services/message"
 	"encoding/json"
 	"errors"
 	"io"
@@ -13,16 +14,19 @@ import (
 )
 
 type clientService struct {
-	repository clientRepository.ClientRepositoryInterface
+	repository     clientRepository.ClientRepositoryInterface
+	messageService messageService.MessageServiceInterface
 }
 
 // NewClientService func
-func NewClientService(repository clientRepository.ClientRepositoryInterface) ClientServiceInterface {
+func NewClientService(repository clientRepository.ClientRepositoryInterface, messageService messageService.MessageServiceInterface) ClientServiceInterface {
 	return &clientService{
-		repository: repository,
+		repository:     repository,
+		messageService: messageService,
 	}
 }
 
+// GetAll func
 func (s clientService) GetAll() ([]models.Client, *customError.HTTPError) {
 	clients, err := s.repository.GetAll()
 
@@ -33,6 +37,7 @@ func (s clientService) GetAll() ([]models.Client, *customError.HTTPError) {
 	return clients, nil
 }
 
+// GetById func
 func (s clientService) GetById(id string) (*models.Client, *customError.HTTPError) {
 	client, err := s.repository.GetById(id)
 
@@ -43,18 +48,15 @@ func (s clientService) GetById(id string) (*models.Client, *customError.HTTPErro
 	return client, nil
 }
 
+// Create func
 func (s clientService) Create(body io.Reader) (*models.Client, *customError.HTTPError) {
-	client := dto.CreateClientDTO{}
+	client, clientErr := getValidClient(body)
+
+	if clientErr != nil {
+		return nil, clientErr
+	}
+
 	uuidValue, uuidErr := uuid.NewUUID()
-	decodeErr := json.NewDecoder(body).Decode(&client)
-
-	if decodeErr != nil {
-		return &models.Client{}, customError.NewHTTPError(decodeErr, 400, "BadRequest")
-	}
-
-	if client.Name == "" || client.Address == "" {
-		return &models.Client{}, customError.NewHTTPError(errors.New("Validation error"), 400, "BadRequest")
-	}
 
 	if uuidErr != nil {
 		return nil, customError.NewHTTPError(uuidErr, 500, "UUID")
@@ -72,9 +74,16 @@ func (s clientService) Create(body io.Reader) (*models.Client, *customError.HTTP
 		return nil, customError.NewHTTPError(uuidErr, 400, "UUID")
 	}
 
+	messageErr := enqueueClient(clientCreated, s.messageService)
+
+	if messageErr != nil {
+		return nil, messageErr
+	}
+
 	return clientCreated, nil
 }
 
+// Update func
 func (s clientService) Update(id string, body io.Reader) (*models.Client, *customError.HTTPError) {
 	client, clientErr := s.repository.GetById(id)
 
@@ -98,6 +107,7 @@ func (s clientService) Update(id string, body io.Reader) (*models.Client, *custo
 	return updatedClient, nil
 }
 
+// Delete func
 func (s clientService) Delete(id string) *customError.HTTPError {
 	client, clientErr := s.repository.GetById(id)
 
@@ -112,4 +122,35 @@ func (s clientService) Delete(id string) *customError.HTTPError {
 	}
 
 	return nil
+}
+
+func enqueueClient(client *models.Client, messageService messageService.MessageServiceInterface) *customError.HTTPError {
+	clientToEnqueue, clientToEnqueueErr := json.Marshal(client)
+
+	if clientToEnqueueErr != nil {
+		return customError.NewHTTPError(clientToEnqueueErr, 500, "Encode Client to message")
+	}
+
+	messageErr := messageService.Enqueue(clientToEnqueue)
+
+	if messageErr != nil {
+		return customError.NewHTTPError(clientToEnqueueErr, 500, "Message Error")
+	}
+
+	return nil
+}
+
+func getValidClient(body io.Reader) (dto.CreateClientDTO, *customError.HTTPError) {
+	client := dto.CreateClientDTO{}
+	decodeErr := json.NewDecoder(body).Decode(&client)
+
+	if decodeErr != nil {
+		return dto.CreateClientDTO{}, customError.NewHTTPError(decodeErr, 400, "BadRequest")
+	}
+
+	if client.Name == "" || client.Address == "" {
+		return dto.CreateClientDTO{}, customError.NewHTTPError(errors.New("Validation error"), 400, "BadRequest")
+	}
+
+	return client, nil
 }

@@ -5,14 +5,15 @@ import (
 	clientRepository "backend/repositories/client"
 	routers "backend/routers"
 	clientService "backend/services/client"
+	messageService "backend/services/message"
 
 	"gorm.io/gorm"
 )
 
 // NewClientServer func
-func NewClientServer(db *gorm.DB) *Wrapper {
+func NewClientServer(db *gorm.DB, messageService messageService.MessageServiceInterface) *Wrapper {
 	clientRepository := clientRepository.NewClientRepository(db)
-	clientService := clientService.NewClientService(clientRepository)
+	clientService := clientService.NewClientService(clientRepository, messageService)
 	clientController := clientController.NewClientController(clientService)
 	clientRouter := routers.NewClientRouter(clientController)
 

@@ -2,9 +2,11 @@ package main
 
 import (
 	"backend/api"
+	"backend/utils"
+	"fmt"
 )
 
 func main() {
 	server := api.NewServer()
-	server.Run(":3001")
+	server.Run(fmt.Sprintf(":%s", utils.GetEnvVariable("PORT")))
 }

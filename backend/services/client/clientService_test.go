@@ -1,12 +1,11 @@
-package tests
+package services
 
 import (
 	customError "backend/error"
 	"backend/models"
 	dto "backend/models/dto"
-	clientService "backend/services/client"
-	clientRepository "backend/tests/repositories/client"
-	messageService "backend/tests/services/message"
+	clientRepository "backend/repositories/client"
+	messageService "backend/services/message"
 	"errors"
 	"testing"
 
@@ -19,7 +18,7 @@ func TestGetById(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	repository.On("GetById").Return(&models.Client{}, nil)
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	client, clientErr := service.GetById("id")
 
@@ -34,7 +33,7 @@ func TestGetByIdNotFound(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	repository.On("GetById").Return(nil, errors.New(""))
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	client, clientErr := service.GetById("id")
 
@@ -50,7 +49,7 @@ func TestGetAll(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	repository.On("GetAll").Return([]models.Client{}, nil)
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	clients, clientsErr := service.GetAll()
 
@@ -65,7 +64,7 @@ func TestGetAllError(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	repository.On("GetAll").Return(nil, errors.New(""))
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	clients, clientsErr := service.GetAll()
 
@@ -84,7 +83,7 @@ func TestCreate(t *testing.T) {
 	repository.On("Create").Return(&models.Client{}, nil)
 	messageServiceMock := messageService.MessageRepositoryMock{}
 	messageServiceMock.On("Enqueue").Return(nil)
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	newClient, newClientErr := service.Create(client)
 
@@ -101,7 +100,7 @@ func TestCreateEmptyName(t *testing.T) {
 
 	repository := clientRepository.ClientRepositoryMock{}
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	newClient, newClientErr := service.Create(client)
 
@@ -119,7 +118,7 @@ func TestCreateEmptyAddress(t *testing.T) {
 
 	repository := clientRepository.ClientRepositoryMock{}
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	newClient, newClientErr := service.Create(client)
 
@@ -138,7 +137,7 @@ func TestCreateRepositoryError(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	messageServiceMock := messageService.MessageRepositoryMock{}
 	repository.On("Create").Return(nil, errors.New(""))
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	newClient, newClientErr := service.Create(client)
 
@@ -159,7 +158,7 @@ func TestCreateMessageServiceError(t *testing.T) {
 	messageServiceMock := messageService.MessageRepositoryMock{}
 	repository.On("Create").Return(&models.Client{}, nil)
 	messageServiceMock.On("Enqueue").Return(errors.New(""))
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	newClient, newClientErr := service.Create(client)
 
@@ -181,7 +180,7 @@ func TestUpdate(t *testing.T) {
 	repository.On("GetById").Return(&models.Client{}, nil)
 	repository.On("Update").Return(&models.Client{}, nil)
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	updatedClient, updatedClientErr := service.Update(clientId, data)
 
@@ -200,7 +199,7 @@ func TestUpdateNotFound(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	repository.On("GetById").Return(nil, errors.New(""))
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	updatedClient, updatedClientErr := service.Update(clientId, data)
 
@@ -221,7 +220,7 @@ func TestUpdateError(t *testing.T) {
 	repository.On("GetById").Return(&models.Client{}, nil)
 	repository.On("Update").Return(nil, errors.New(""))
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	updatedClient, updatedClientErr := service.Update(clientId, data)
 
@@ -242,7 +241,7 @@ func TestDelete(t *testing.T) {
 	repository.On("GetById").Return(&models.Client{}, nil)
 	repository.On("Delete").Return(nil)
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	deletedClientErr := service.Delete(clientId)
 
@@ -258,7 +257,7 @@ func TestDeleteNotFound(t *testing.T) {
 	repository := clientRepository.ClientRepositoryMock{}
 	repository.On("GetById").Return(nil, errors.New(""))
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	deletedClientErr := service.Delete(clientId)
 
@@ -277,7 +276,7 @@ func TestDeleteError(t *testing.T) {
 	repository.On("GetById").Return(&models.Client{}, nil)
 	repository.On("Delete").Return(errors.New(""))
 	messageServiceMock := messageService.MessageRepositoryMock{}
-	service := clientService.NewClientService(&repository, &messageServiceMock)
+	service := NewClientService(&repository, &messageServiceMock)
 
 	deletedClientErr := service.Delete(clientId)
 

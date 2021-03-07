@@ -1,9 +1,8 @@
-package tests
+package controllers
 
 import (
-	clientController "backend/controllers/client"
 	"backend/models"
-	clientService "backend/tests/services/client"
+	clientService "backend/services/client"
 	"bytes"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +14,7 @@ import (
 func TestGetById(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	service.On("GetById").Return(&models.Client{}, nil)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 
 	req, err := http.NewRequest("GET", "/client/id", nil)
 
@@ -37,7 +36,7 @@ func TestGetByIdError(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	notFoundErrorStatus := 404
 	service.On("GetById").Return(nil, notFoundErrorStatus)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 
 	req, err := http.NewRequest("GET", "/client/id", nil)
 
@@ -58,7 +57,7 @@ func TestGetByIdError(t *testing.T) {
 func TestGetAll(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	service.On("GetAll").Return([]models.Client{}, nil)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 
 	req, err := http.NewRequest("GET", "/client", nil)
 
@@ -80,7 +79,7 @@ func TestGetAllError(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	internalErrorStatus := 500
 	service.On("GetAll").Return(nil, internalErrorStatus)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 
 	req, err := http.NewRequest("GET", "/client", nil)
 
@@ -101,7 +100,7 @@ func TestGetAllError(t *testing.T) {
 func TestCreate(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	service.On("Create").Return(&models.Client{}, nil)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 	body := []byte(`{"name": "Nome", "address": "address"}`)
 
 	req, err := http.NewRequest("POST", "/client", bytes.NewBuffer(body))
@@ -123,7 +122,7 @@ func TestCreate(t *testing.T) {
 func TestCreateDecodeBodyError(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	badRequestStatus := 400
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 	body := []byte(``)
 
 	req, err := http.NewRequest("POST", "/client", bytes.NewBuffer(body))
@@ -146,7 +145,7 @@ func TestCreateErrorFromService(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	badRequestStatus := 400
 	service.On("Create").Return(nil, badRequestStatus)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 	body := []byte(`{"name": "Nome", "address": "address"}`)
 
 	req, err := http.NewRequest("POST", "/client", bytes.NewBuffer(body))
@@ -168,7 +167,7 @@ func TestCreateErrorFromService(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	service.On("Update").Return(&models.Client{}, nil)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 	body := []byte(`{"name": "Upddate Nome", "address": "Update Address"}`)
 
 	req, err := http.NewRequest("UPDATE", "/client/1", bytes.NewBuffer(body))
@@ -189,7 +188,7 @@ func TestUpdate(t *testing.T) {
 
 func TestUpdateDecodeBodyError(t *testing.T) {
 	service := clientService.ClientServiceMock{}
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 	body := []byte(``)
 
 	req, err := http.NewRequest("UPDATE", "/client/1", bytes.NewBuffer(body))
@@ -212,7 +211,7 @@ func TestUpdateServiceError(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	serviceStatusError := 500
 	service.On("Update").Return(nil, serviceStatusError)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 	body := []byte(`{"name": "Upddate Nome", "address": "Update Address"}`)
 
 	req, err := http.NewRequest("UPDATE", "/client/1", bytes.NewBuffer(body))
@@ -234,7 +233,7 @@ func TestUpdateServiceError(t *testing.T) {
 func TestDelete(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	service.On("Delete").Return(nil)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 
 	req, err := http.NewRequest("DELETE", "/client/1", nil)
 
@@ -256,7 +255,7 @@ func TestDeleteError(t *testing.T) {
 	service := clientService.ClientServiceMock{}
 	serviceStatusError := 500
 	service.On("Delete").Return(serviceStatusError)
-	controller := clientController.NewClientController(&service)
+	controller := NewClientController(&service)
 
 	req, err := http.NewRequest("DELETE", "/client/1", nil)
 

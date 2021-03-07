@@ -8,7 +8,7 @@ import (
 	messageService "backend/services/message"
 	"encoding/json"
 	"errors"
-	"io"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -50,7 +50,7 @@ func (s clientService) GetById(id string) (*models.Client, *customError.HTTPErro
 
 // Create func
 func (s clientService) Create(client dto.CreateClientDTO) (*models.Client, *customError.HTTPError) {
-	if client.Name == "" || client.Address == "" {
+	if strings.Trim(client.Name, " ") == "" || strings.Trim(client.Address, " ") == "" {
 		return nil, customError.NewHTTPError(errors.New("Validation error"), 400, "BadRequest")
 	}
 
@@ -69,7 +69,7 @@ func (s clientService) Create(client dto.CreateClientDTO) (*models.Client, *cust
 	clientCreated, clientCreatedErr := s.repository.Create(newClient)
 
 	if clientCreatedErr != nil {
-		return nil, customError.NewHTTPError(uuidErr, 400, "UUID")
+		return nil, customError.NewHTTPError(clientCreatedErr, 400, "Database")
 	}
 
 	messageErr := enqueueClient(clientCreated, s.messageService)
@@ -82,24 +82,17 @@ func (s clientService) Create(client dto.CreateClientDTO) (*models.Client, *cust
 }
 
 // Update func
-func (s clientService) Update(id string, body io.Reader) (*models.Client, *customError.HTTPError) {
+func (s clientService) Update(id string, data map[string]interface{}) (*models.Client, *customError.HTTPError) {
 	client, clientErr := s.repository.GetById(id)
 
 	if clientErr != nil {
 		return nil, customError.NewHTTPError(clientErr, 404, "Client")
 	}
 
-	valuesToUpdate := map[string]interface{}{}
-	decodeErr := json.NewDecoder(body).Decode(&valuesToUpdate)
+	updatedClient, updatedClientErr := s.repository.Update(client, data)
 
-	if decodeErr != nil {
-		return nil, customError.NewHTTPError(clientErr, 400, "BadRequest")
-	}
-
-	updatedClient, updatedClientErr := s.repository.Update(client, valuesToUpdate)
-
-	if updatedClient != nil {
-		return nil, customError.NewHTTPError(updatedClientErr, 400, "BadRequest")
+	if updatedClientErr != nil {
+		return nil, customError.NewHTTPError(updatedClientErr, 500, "Database")
 	}
 
 	return updatedClient, nil
@@ -116,7 +109,7 @@ func (s clientService) Delete(id string) *customError.HTTPError {
 	deleteErr := s.repository.Delete(client)
 
 	if deleteErr != nil {
-		return customError.NewHTTPError(deleteErr, 400, "Delete")
+		return customError.NewHTTPError(deleteErr, 500, "Database")
 	}
 
 	return nil
@@ -132,7 +125,7 @@ func enqueueClient(client *models.Client, messageService messageService.MessageS
 	messageErr := messageService.Enqueue(clientToEnqueue)
 
 	if messageErr != nil {
-		return customError.NewHTTPError(clientToEnqueueErr, 500, "Message Error")
+		return customError.NewHTTPError(clientToEnqueueErr, 500, "Message Service")
 	}
 
 	return nil

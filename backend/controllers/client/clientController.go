@@ -73,7 +73,16 @@ func (c clientController) Create(w http.ResponseWriter, r *http.Request) {
 func (c clientController) Update(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	clientId := params["id"]
-	_, err := c.service.Update(clientId, r.Body)
+
+	data := map[string]interface{}{}
+	decodeErr := json.NewDecoder(r.Body).Decode(&data)
+
+	if decodeErr != nil {
+		httpError := customError.NewHTTPError(decodeErr, 400, "BadRequest")
+		http.Error(w, httpError.Error(), httpError.Status)
+		return
+	}
+	_, err := c.service.Update(clientId, data)
 
 	if err != nil {
 		http.Error(w, err.Error(), err.Status)

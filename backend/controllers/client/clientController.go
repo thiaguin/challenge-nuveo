@@ -66,6 +66,7 @@ func (c clientController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(newClient)
 }
 

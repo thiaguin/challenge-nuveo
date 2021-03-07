@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	customError "backend/error"
+	dto "backend/models/dto"
 	clientService "backend/services/client"
 	"encoding/json"
 	"net/http"
@@ -48,14 +50,23 @@ func (c clientController) GetById(w http.ResponseWriter, r *http.Request) {
 
 // GetAll func
 func (c clientController) Create(w http.ResponseWriter, r *http.Request) {
-	client, err := c.service.Create(r.Body)
+	client := dto.CreateClientDTO{}
+	decodeErr := json.NewDecoder(r.Body).Decode(&client)
 
-	if err != nil {
-		http.Error(w, err.Error(), err.Status)
+	if decodeErr != nil {
+		httpError := customError.NewHTTPError(decodeErr, 400, "BadRequest")
+		http.Error(w, httpError.Error(), httpError.Status)
 		return
 	}
 
-	json.NewEncoder(w).Encode(client)
+	newClient, newClientErr := c.service.Create(client)
+
+	if newClientErr != nil {
+		http.Error(w, newClientErr.Error(), newClientErr.Status)
+		return
+	}
+
+	json.NewEncoder(w).Encode(newClient)
 }
 
 // GetAll func

@@ -1,6 +1,49 @@
 version: '3'
 
 services:
+    gosidekick:
+        restart: on-failure
+        build: .
+        depends_on: 
+            - backend-postgres
+        networks:
+            - backend-network
+    backend:
+        build: ./backend
+        ports:
+            - '8080:3001'
+        environment:
+            - AMQP_URL=amqp://user:pwd2021@backend-rabbitmq
+            - DB_PORT=5432
+            - DB_NAME=nuveo-db
+            - DB_HOST=backend-postgres
+            - DB_PASSWORD=pwd2021
+            - DB_USERNAME=backend-username
+            - PORT=3001
+        depends_on:
+            - backend-postgres
+            - backend-rabbitmq            
+        restart: on-failure
+        networks:
+            - backend-network
+
+    microservice:
+        build: ./microservice
+        ports:
+            - '8000:3002'
+        environment:
+            - AMQP_URL=amqp://user:pwd2021@backend-rabbitmq
+            - PORT=3002
+            - NOVOS_CLIENTES=/home/thiago/Documentos
+            - DOCKER_VOLUME=/root
+        depends_on:
+            - backend-rabbitmq 
+        volumes: 
+            - /:/root           
+        restart: on-failure
+        networks:
+            - backend-network
+
     pgadmin4:
         image: dpage/pgadmin4
         container_name: backend-pgadmin4
@@ -31,12 +74,19 @@ services:
     backend-rabbitmq:
         image: 'rabbitmq:3-management'
         container_name: backend-rabbitmq
+        environment:
+            - RABBITMQ_DEFAULT_USER=user
+            - RABBITMQ_DEFAULT_PASS=pwd2021
         ports:
             - '15672:15672'
             - '5672:5672'
+        healthcheck:
+            test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+            interval: 5s
+            timeout: 15s
+            retries: 1
         networks:
             - backend-network
-
 
 networks:
     backend-network:

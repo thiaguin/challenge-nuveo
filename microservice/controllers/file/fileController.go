@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	file "microservice/services/file"
 	message "microservice/services/message"
 	"microservice/utils"
@@ -23,9 +24,13 @@ func NewFileController(messageService message.MessageServiceInterface, fileServi
 // Write func
 func (c fileController) Write(w http.ResponseWriter, r *http.Request) {
 	directory := utils.GetEnvVariable("NOVOS_CLIENTES")
-	_, directoryErr := c.fileService.Exist(directory)
+	dockerVolume := utils.GetEnvVariable("DOCKER_VOLUME")
 
-	if directoryErr != nil {
+	path := fmt.Sprintf("%s%s", dockerVolume, directory)
+
+	_, pathErr := c.fileService.Exist(path)
+
+	if pathErr != nil {
 		http.Error(w, "Caminho não encontrado", 400)
 		return
 	}
@@ -42,7 +47,7 @@ func (c fileController) Write(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeErr := c.fileService.Write(message, directory)
+	writeErr := c.fileService.Write(message, path)
 
 	if writeErr != nil {
 		http.Error(w, writeErr.Error(), 500)

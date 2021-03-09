@@ -34,7 +34,7 @@ services:
         environment:
             - AMQP_URL=amqp://user:pwd2021@backend-rabbitmq
             - PORT=3002
-            - NOVOS_CLIENTES=/home/thiago/Documentos
+            - NOVOS_CLIENTES=
             - DOCKER_VOLUME=/root
         depends_on:
             - backend-rabbitmq 

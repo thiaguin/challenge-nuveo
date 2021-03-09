@@ -15,6 +15,8 @@ The stack used in this project was the following:
 -   Docker Compose
 ## How To Run
 
+Set the enviroment variable NOVOS_CLIENTES at the docker-compose.yml to be the path to upload the user .json file
+
 Clone the gosidekick project [(here)](https://github.com/gosidekick/migration), build the ./migration executable file on the project root, and run:
 
 ``` bash
